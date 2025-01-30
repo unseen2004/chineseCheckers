@@ -5,6 +5,7 @@ import org.chinesecheckers.common.PlayerColor;
 import org.chinesecheckers.common.Response;
 import org.chinesecheckers.common.ResponseInterpreter;
 import org.chinesecheckers.server.movement.*;
+import org.chinesecheckers.server.player.Bot;
 import org.chinesecheckers.server.player.Player;
 import org.chinesecheckers.server.player.PlayerEntity;
 import org.chinesecheckers.server.player.PlayerLeftException;
@@ -29,7 +30,7 @@ class GameSession {
     private boolean m_turnFinished;
     private int m_place;
 
-    GameSession(List<Socket> playerSockets, String gameMode) throws Exception {
+    GameSession(List<Socket> playerSockets, String gameMode, int numberOfBots) throws Exception {
         BoardFactory boardFactory;
         MovementStrategy movementStrategy;
 
@@ -46,13 +47,15 @@ class GameSession {
 
         int numberOfPlayers = playerSockets.size();
 
-        m_gameHandler.initializeBoard(numberOfPlayers);
-        m_availableColors = m_gameHandler.getPossibleColorsForPlayers(numberOfPlayers);
+        int total = numberOfPlayers + numberOfBots;
+        m_gameHandler.initializeBoard(total);
+        m_availableColors = m_gameHandler.getPossibleColorsForPlayers(total);
 
         m_turnFinished = true;
         m_place = 1;
 
         addPlayers(playerSockets);
+        addBots(numberOfBots, playerSockets.size());
     }
 
     private void addPlayers(List<Socket> playerSockets) throws Exception {
@@ -62,6 +65,17 @@ class GameSession {
             m_players.add(new PlayerEntity(playerSockets.get(i), m_availableColors[i]));
         }
     }
+
+    private void addBots(int numberOfBots, int colorIndex)
+    {
+        for (int i = colorIndex; i < numberOfBots + colorIndex; i++)
+        {
+            System.out.print("Added bot");
+            m_players.add(new Bot(m_availableColors[i], m_gameHandler));
+        }
+    }
+
+
 
     void start() {
         try {

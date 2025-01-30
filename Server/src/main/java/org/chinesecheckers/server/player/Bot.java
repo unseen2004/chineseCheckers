@@ -21,10 +21,10 @@ public class Bot extends Player {
     private GridCoordinate m_target;
     private int m_skipCount;
 
-    public Bot(Colors colors, GameHandler gameHandler) {
+    public Bot(PlayerColor color, GameHandler gameHandler) {
         this.m_gameHandler = gameHandler;
         moves = new ArrayList<>();
-        this.color = colors;
+        this.color = Colors.valueOf(color.name());
         setTarget();
         m_jumpVerificationCondition = new JumpVerificationCondition(0);
         m_pawnVerificationCondition = new PawnVerificationCondition();

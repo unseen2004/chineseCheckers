@@ -13,6 +13,7 @@ class Server {
 
     private int m_numberOfPlayers = 1;
     private String m_gameMode = "default"; // Add game mode
+    private int m_numberOfBots = 0;
 
     Server(int port) throws Exception {
         System.out.println("Server is starting");
@@ -28,8 +29,10 @@ class Server {
         while (true) {
             try {
                 readNumberOfPlayers();
+                readNumberOfBots();
+                m_numberOfPlayers -= m_numberOfBots;
                 readGameMode();
-                startMatch(m_numberOfPlayers, m_gameMode);
+                startMatch(m_numberOfPlayers, m_gameMode, m_numberOfBots);
             } catch (Exception e) {
                 System.out.println("Error: " + e.getMessage());
             }
@@ -39,18 +42,18 @@ class Server {
         }
     }
 
-    private void startMatch(int numberOfRealPlayers, String gameMode) throws Exception {
-        System.out.println("Game starts: " + numberOfRealPlayers + " players ");
+    private void startMatch(int numberOfPlayers, String gameMode, int numberOfBots) throws Exception {
+        System.out.println("Game starts: " + numberOfPlayers + " players and " + numberOfBots + " bots");
 
-        createMatch(numberOfRealPlayers, gameMode);
+        createMatch(numberOfPlayers, gameMode, numberOfBots);
         m_gameSession.start();
 
 
     }
 
-    private void createMatch(int numberOfRealPlayers, String gameMode) throws Exception {
-        connectPlayers(numberOfRealPlayers);
-        m_gameSession = new GameSession(m_playerSockets, gameMode);
+    private void createMatch(int numberOfPlayers, String gameMode, int numberOfBots) throws Exception {
+        connectPlayers(numberOfPlayers);
+        m_gameSession = new GameSession(m_playerSockets, gameMode, numberOfBots);
     }
 
     private void connectPlayers(int numberOfPlayersToConnect) throws Exception {
@@ -87,6 +90,30 @@ class Server {
             }
         } while (!inputCorrect);
     }
+
+
+    private void readNumberOfBots() {
+        boolean inputCorrect;
+        do {
+            inputCorrect = true;
+            System.out.println("Number of Bots (0-" + m_numberOfPlayers + "):");
+            Scanner scanner = new Scanner(System.in);
+
+            try {
+                int newNumberOfBots = scanner.nextInt();
+                if (newNumberOfBots >= 0 && newNumberOfBots <= m_numberOfPlayers) {
+                    m_numberOfBots = newNumberOfBots;
+                } else {
+                    System.out.println("Wrong number. Should be between 0 and " + m_numberOfPlayers);
+                    inputCorrect = false;
+                }
+            } catch (Exception e) {
+                System.out.println("Wrong number.");
+                inputCorrect = false;
+            }
+        } while (!inputCorrect);
+    }
+
     private void readGameMode() {
         boolean inputCorrect;
         do {
