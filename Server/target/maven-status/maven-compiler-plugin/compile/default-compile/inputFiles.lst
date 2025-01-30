@@ -8,6 +8,7 @@
 /home/maks/Programming/chineseCheckers/Server/src/main/java/org/chinesecheckers/server/movement/MoveValidationCondition.java
 /home/maks/Programming/chineseCheckers/Server/src/main/java/org/chinesecheckers/server/movement/MovementStrategy.java
 /home/maks/Programming/chineseCheckers/Server/src/main/java/org/chinesecheckers/server/movement/PawnVerificationCondition.java
+/home/maks/Programming/chineseCheckers/Server/src/main/java/org/chinesecheckers/server/player/Bot.java
 /home/maks/Programming/chineseCheckers/Server/src/main/java/org/chinesecheckers/server/player/CommunicationManager.java
 /home/maks/Programming/chineseCheckers/Server/src/main/java/org/chinesecheckers/server/player/Player.java
 /home/maks/Programming/chineseCheckers/Server/src/main/java/org/chinesecheckers/server/player/PlayerEntity.java

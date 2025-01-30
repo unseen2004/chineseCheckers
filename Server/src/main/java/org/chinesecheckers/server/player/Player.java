@@ -1,10 +1,11 @@
 package org.chinesecheckers.server.player;
 
+import org.chinesecheckers.common.Colors;
 import org.chinesecheckers.common.PlayerColor;
 
 
 public abstract class Player {
-    PlayerColor color;
+    Colors color;
     private boolean m_finished;
 
 
@@ -14,7 +15,7 @@ public abstract class Player {
     public abstract String readResponse() throws PlayerLeftException;
 
     public PlayerColor getColor() {
-        return color;
+        return PlayerColor.valueOf(color.name());
     }
 
     public boolean isFinished() {

@@ -77,7 +77,7 @@ public class GameHandler {
         return m_board.getAsString();
     }
 
-    public Board getM_board() {
+    public Board getBoard() {
         return m_board;
     }
 

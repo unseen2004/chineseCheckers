@@ -1,5 +1,6 @@
 package org.chinesecheckers.server.player;
 
+import org.chinesecheckers.common.Colors;
 import org.chinesecheckers.common.PlayerColor;
 
 import java.net.Socket;
@@ -9,7 +10,7 @@ public class PlayerEntity extends Player {
     private final CommunicationManager m_communicationManager;
 
     public PlayerEntity(Socket socket, PlayerColor color) throws Exception {
-        this.color = color;
+        this.color = Colors.valueOf(color.name());
         m_communicationManager = new CommunicationManager(socket);
     }
 
