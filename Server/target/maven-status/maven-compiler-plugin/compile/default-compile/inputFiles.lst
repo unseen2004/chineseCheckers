@@ -1,6 +1,8 @@
 /home/maks/Programming/chineseCheckers/Server/src/main/java/org/chinesecheckers/server/main/GameSession.java
 /home/maks/Programming/chineseCheckers/Server/src/main/java/org/chinesecheckers/server/main/Main.java
 /home/maks/Programming/chineseCheckers/Server/src/main/java/org/chinesecheckers/server/main/Server.java
+/home/maks/Programming/chineseCheckers/Server/src/main/java/org/chinesecheckers/server/model/Game.java
+/home/maks/Programming/chineseCheckers/Server/src/main/java/org/chinesecheckers/server/model/Move.java
 /home/maks/Programming/chineseCheckers/Server/src/main/java/org/chinesecheckers/server/movement/DefaultMovementStrategy.java
 /home/maks/Programming/chineseCheckers/Server/src/main/java/org/chinesecheckers/server/movement/DiamondMovementVerifier.java
 /home/maks/Programming/chineseCheckers/Server/src/main/java/org/chinesecheckers/server/movement/GameHandler.java
@@ -13,6 +15,8 @@
 /home/maks/Programming/chineseCheckers/Server/src/main/java/org/chinesecheckers/server/player/Player.java
 /home/maks/Programming/chineseCheckers/Server/src/main/java/org/chinesecheckers/server/player/PlayerEntity.java
 /home/maks/Programming/chineseCheckers/Server/src/main/java/org/chinesecheckers/server/player/PlayerLeftException.java
+/home/maks/Programming/chineseCheckers/Server/src/main/java/org/chinesecheckers/server/repository/GameRepository.java
+/home/maks/Programming/chineseCheckers/Server/src/main/java/org/chinesecheckers/server/repository/MoveRepository.java
 /home/maks/Programming/chineseCheckers/Server/src/main/java/org/chinesecheckers/server/serverBoard/Board.java
 /home/maks/Programming/chineseCheckers/Server/src/main/java/org/chinesecheckers/server/serverBoard/BoardFactory.java
 /home/maks/Programming/chineseCheckers/Server/src/main/java/org/chinesecheckers/server/serverBoard/Cell.java
