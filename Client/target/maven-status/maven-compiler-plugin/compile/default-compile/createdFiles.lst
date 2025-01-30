@@ -1,0 +1,8 @@
+org/chinesecheckers/client/main/Player.class
+org/chinesecheckers/client/main/Controller.class
+org/chinesecheckers/client/main/Main.class
+module-info.class
+org/chinesecheckers/client/main/ServerConnectionHandler.class
+org/chinesecheckers/client/board/Cell.class
+org/chinesecheckers/client/board/Cell$1.class
+org/chinesecheckers/client/board/Board.class

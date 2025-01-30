@@ -1,0 +1,4 @@
+org/chinesecheckers/common/Colors.class
+module-info.class
+org/chinesecheckers/common/ClientMessage.class
+org/chinesecheckers/common/GridCoordinate.class
