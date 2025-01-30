@@ -1,5 +1,6 @@
 package org.chinesecheckers.server.player;
 
+
 import org.chinesecheckers.common.*;
 import org.chinesecheckers.server.movement.GameHandler;
 import org.chinesecheckers.server.movement.JumpVerificationCondition;
@@ -66,12 +67,13 @@ public class Bot extends Player {
                         m_pawnVerificationCondition.setCurrentXY(i, j);
                         possibleMoves = m_gameHandler.getPossibleMovesForCell(i, j, m_verifyConditions);
                         for (Coord temp : possibleMoves) {
-                            moves.add(new Move(new GridCoordinate(temp.getX(), temp.getY()), new GridCoordinate(temp.getX(), temp.getY())));
+                            moves.add(new Move(new GridCoordinate(i, j), new GridCoordinate(temp.getX(), temp.getY())));
                         }
                     }
                 }
             }
         }
+        System.out.println("Bot " + color + " listed moves: " + moves);
     }
 
     void evaluateMoves() {
@@ -86,10 +88,11 @@ public class Bot extends Player {
         }
         moves.sort(Collections.reverseOrder());
         updateVerifyConditions(bestMove());
+        System.out.println("Bot " + color + " evaluated moves: " + moves);
     }
 
     Move bestMove() {
-        return !moves.isEmpty() ? moves.getFirst() : null;
+        return !moves.isEmpty() ? moves.get(0) : null;
     }
 
     Double calcDistance(GridCoordinate c1, GridCoordinate c2) {
@@ -179,6 +182,15 @@ public class Bot extends Player {
 
         void setValue(Double value) {
             this.value = value;
+        }
+
+        @Override
+        public String toString() {
+            return "Move{" +
+                    "from=" + from +
+                    ", to=" + to +
+                    ", value=" + value +
+                    '}';
         }
     }
 }
