@@ -8,5 +8,6 @@ public enum Colors
     YELLOW,
     BLUE,
     ORANGE,
-    VIOLET
+    VIOLET,
+
 }

@@ -89,49 +89,50 @@ class Server {
         }
     }
 
-    // Server.java
-    private void replayRecordedGame() {
-        List<Game> games = gameRepository.findAllGames();
-        if (games.isEmpty()) {
-            System.out.println("No recorded games found. Please create a new game.");
-            try {
-                readNumberOfPlayers();
-                readNumberOfBots();
-                if (m_numberOfBots > 0) {
-                    readSleepDuration();
-                }
-                m_numberOfPlayers -= m_numberOfBots;
-                readGameMode();
-                startMatch(m_numberOfPlayers, m_gameMode, m_numberOfBots, m_sleepDuration);
-            } catch (Exception e) {
-                System.out.println("Error: " + e.getMessage());
-            }
-            return;
-        }
-
-        System.out.println("Choose a game to replay:");
-        for (int i = 0; i < games.size(); i++) {
-            System.out.println((i + 1) + ") Game ID: " + games.get(i).getId() + ", Mode: " + games.get(i).getMode());
-        }
-
-        Scanner scanner = new Scanner(System.in);
-        int gameChoice = scanner.nextInt();
-        if (gameChoice < 1 || gameChoice > games.size()) {
-            System.out.println("Invalid choice.");
-            return;
-        }
-
-        Game selectedGame = games.get(gameChoice - 1);
-        System.out.println("Replaying game ID: " + selectedGame.getId() + ", Mode: " + selectedGame.getMode());
-
+private void replayRecordedGame() {
+    List<Game> games = gameRepository.findAllGames();
+    if (games.isEmpty()) {
+        System.out.println("No recorded games found. Please create a new game.");
         try {
-            m_playerSockets = new ArrayList<>(); // Initialize m_playerSockets as an empty list
-            m_gameSession.initialize(new ArrayList<>(), selectedGame.getMode(), 0, m_sleepDuration);
-            m_gameSession.replayMoves(selectedGame.getId());
+            readNumberOfPlayers();
+            readNumberOfBots();
+            if (m_numberOfBots > 0) {
+                readSleepDuration();
+            }
+            m_numberOfPlayers -= m_numberOfBots;
+            readGameMode();
+            startMatch(m_numberOfPlayers, m_gameMode, m_numberOfBots, m_sleepDuration);
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
         }
+        return;
     }
+
+    System.out.println("Choose a game to replay:");
+    for (int i = 0; i < games.size(); i++) {
+        System.out.println((i + 1) + ") Game ID: " + games.get(i).getId() + ", Mode: " + games.get(i).getMode());
+    }
+
+    Scanner scanner = new Scanner(System.in);
+    int gameChoice = scanner.nextInt();
+    if (gameChoice < 1 || gameChoice > games.size()) {
+        System.out.println("Invalid choice.");
+        return;
+    }
+
+    Game selectedGame = games.get(gameChoice - 1);
+    System.out.println("Replaying game ID: " + selectedGame.getId() + ", Mode: " + selectedGame.getMode());
+
+    try {
+        m_playerSockets = new ArrayList<>(); // Initialize m_playerSockets as an empty list
+        int numberOfPlayers = selectedGame.getNumberOfPlayers(); // Retrieve the number of players from the game
+        int numberOfBots = selectedGame.getNumberOfBots(); // Retrieve the number of bots from the game
+        m_gameSession.initialize(new ArrayList<>(), selectedGame.getMode(), numberOfBots, m_sleepDuration);
+        m_gameSession.replayMoves(selectedGame.getId());
+    } catch (Exception e) {
+        System.out.println("Error: " + e.getMessage());
+    }
+}
 
     private void readNumberOfPlayers() {
         boolean inputCorrect;

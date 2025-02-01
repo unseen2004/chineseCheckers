@@ -3,8 +3,8 @@ package org.chinesecheckers.server.serverBoard;
 import org.chinesecheckers.common.PlayerColor;
 
 public class DefaultBoardFactory implements BoardFactory {
-    private static final int COLUMNS = 13;
-    private static final int ROWS = 17;
+    protected static final int COLUMNS = 13;
+    protected static final int ROWS = 17;
 
     @Override
     public Board createBoard(int numberOfPlayers) throws GameException {

@@ -58,4 +58,8 @@ public class Cell {
     public boolean isSpecial() {
         return m_special;
     }
+
+    public void setNativeColor(PlayerColor nativeColor) {
+        this.m_nativeColor = nativeColor;
+    }
 }

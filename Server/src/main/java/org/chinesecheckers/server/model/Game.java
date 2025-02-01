@@ -1,3 +1,4 @@
+// Game.java
 package org.chinesecheckers.server.model;
 
 import jakarta.persistence.*;
@@ -9,10 +10,12 @@ public class Game {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToMany(mappedBy = "game", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "game", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<Move> moves;
 
     private String mode;
+    private int numberOfPlayers;
+    private int numberOfBots; // Add this field
 
     // Getters and setters
     public Long getId() {
@@ -37,5 +40,21 @@ public class Game {
 
     public void setMode(String mode) {
         this.mode = mode;
+    }
+
+    public int getNumberOfPlayers() {
+        return numberOfPlayers;
+    }
+
+    public void setNumberOfPlayers(int numberOfPlayers) {
+        this.numberOfPlayers = numberOfPlayers;
+    }
+
+    public int getNumberOfBots() {
+        return numberOfBots;
+    }
+
+    public void setNumberOfBots(int numberOfBots) {
+        this.numberOfBots = numberOfBots;
     }
 }

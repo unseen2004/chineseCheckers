@@ -56,34 +56,36 @@ class GameSession {
         this.m_availableColors = new PlayerColor[0]; // Initialize with an empty array
     }
 
-    void initialize(List<Socket> playerSockets, String gameMode, int numberOfBots, int sleepDuration) throws Exception {
-        m_players.clear(); // Clear the players list at the beginning
+void initialize(List<Socket> playerSockets, String gameMode, int numberOfBots, int sleepDuration) throws Exception {
+    m_players.clear(); // Clear the players list at the beginning
 
-        BoardFactory boardFactory;
-        MovementStrategy movementStrategy;
+    BoardFactory boardFactory;
+    MovementStrategy movementStrategy;
 
-        if ("diamond".equalsIgnoreCase(gameMode)) {
-            boardFactory = new DiamondBoardFactory();
-            movementStrategy = new DiamondMovementStrategy();
-        } else {
-            boardFactory = new DefaultBoardFactory();
-            movementStrategy = new DefaultMovementStrategy();
-        }
-
-        int numberOfPlayers = playerSockets.size();
-        int total = numberOfPlayers + numberOfBots;
-
-        m_gameHandler.initialize(boardFactory, movementStrategy, total);
-        m_availableColors = m_gameHandler.getPossibleColorsForPlayers(total);
-
-        addPlayers(playerSockets);
-        addBots(numberOfBots, playerSockets.size(), sleepDuration);
-
-        // Initialize and save the game
-        currentGame = new Game();
-        currentGame.setMode(gameMode);
-        gameRepository.save(currentGame);
+    if ("diamond".equalsIgnoreCase(gameMode)) {
+        boardFactory = new DiamondBoardFactory();
+        movementStrategy = new DiamondMovementStrategy();
+    } else {
+        boardFactory = new DefaultBoardFactory();
+        movementStrategy = new DefaultMovementStrategy();
     }
+
+    int numberOfPlayers = playerSockets.size();
+    int total = numberOfPlayers + numberOfBots;
+
+    m_gameHandler.initialize(boardFactory, movementStrategy, total);
+    m_availableColors = m_gameHandler.getPossibleColorsForPlayers(total);
+
+    addPlayers(playerSockets);
+    addBots(numberOfBots, playerSockets.size(), sleepDuration);
+
+    // Initialize and save the game
+    currentGame = new Game();
+    currentGame.setMode(gameMode);
+    currentGame.setNumberOfPlayers(numberOfPlayers);
+    currentGame.setNumberOfBots(numberOfBots); // Save the number of bots
+    gameRepository.save(currentGame);
+}
 
     private void addPlayers(List<Socket> playerSockets) throws Exception {
         int numberOfPlayers = playerSockets.size();
@@ -353,14 +355,15 @@ class GameSession {
         m_players = null;
     }
 
-    // New method to replay moves
+    // GameSession.java
     void replayMoves(Long gameId) {
         List<Move> moves = moveRepository.findMovesByGameId(gameId);
         for (Move move : moves) {
+            System.out.println("Move from (" + move.getFromX() + ", " + move.getFromY() + ") to (" + move.getToX() + ", " + move.getToY() + ")");
             m_gameHandler.makeMove(move.getFromX(), move.getFromY(), move.getToX(), move.getToY());
             sendToAll("BOARD " + m_gameHandler.getBoardAsString());
             try {
-                Thread.sleep(1000); // Add delay to simulate real-time replay
+                Thread.sleep(20); // Add delay to simulate real-time replay
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
