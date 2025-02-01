@@ -21,7 +21,7 @@ public class DiamondBoard extends Board {
             for (int j = 1; j <= rows; j++) {
                 if (cells[i][j].isPlayable()) {
                     if (!cells[i][j].getCurrentColor().equals(PlayerColor.NONE)) {
-                        if (!stringBuilder.toString().equals("")) {
+                        if (!stringBuilder.toString().isEmpty()) {
                             stringBuilder.append(" ");
                         }
                         if (cells[i][j].isKing()) {

@@ -203,7 +203,7 @@ class Server {
         boolean inputCorrect;
         do {
             inputCorrect = true;
-            System.out.println("Game Mode (default/diamond):");
+            System.out.println("Game Mode (default/diamond(ダイヤモンドゲーム)):");
             Scanner scanner = new Scanner(System.in);
 
             try {
@@ -211,7 +211,7 @@ class Server {
                 if ("default".equalsIgnoreCase(mode) || "diamond".equalsIgnoreCase(mode)) {
                     m_gameMode = mode;
                 } else {
-                    System.out.println("Wrong mode. Should be default or diamond");
+                    System.out.println("Wrong mode. Should be default or diamond(ダイヤモンドゲーム)");
                     inputCorrect = false;
                 }
             } catch (Exception e) {

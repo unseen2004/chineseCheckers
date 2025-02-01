@@ -6,6 +6,7 @@ public class DiamondBoardFactory extends DefaultBoardFactory {
 
     @Override
     public Board createBoard(int numberOfPlayers) {
+        m_board = new DiamondBoard(); // Create an instance of DiamondBoard
         setAllPlayers(false);
 
         switch (numberOfPlayers) {
@@ -45,7 +46,6 @@ public class DiamondBoardFactory extends DefaultBoardFactory {
         return m_board;
     }
 
-    // Overloaded method to match the superclass method signature
     @Override
     protected Cell getField(boolean isColorInGame, PlayerColor color) {
         return super.getField(isColorInGame, color);

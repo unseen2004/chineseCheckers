@@ -3,10 +3,11 @@ package org.chinesecheckers.server.serverBoard;
 import org.chinesecheckers.common.PlayerColor;
 
 public class DefaultBoardFactory implements BoardFactory {
-    protected final DefaultBoard m_board = new DefaultBoard();
+    protected Board m_board;
 
     @Override
     public Board createBoard(int numberOfPlayers) {
+        m_board = new DefaultBoard(); // Create an instance of DefaultBoard
         setAllPlayers(false);
 
         switch (numberOfPlayers) {

@@ -59,13 +59,12 @@ class GameSession {
     void initialize(List<Socket> playerSockets, String gameMode, int numberOfBots, int sleepDuration) throws Exception {
         m_players.clear(); // Clear the players list at the beginning
 
-
         BoardFactory boardFactory;
         MovementStrategy movementStrategy;
 
         if ("diamond".equalsIgnoreCase(gameMode)) {
             boardFactory = new DiamondBoardFactory();
-            movementStrategy = new DiamondMovementVerifier();
+            movementStrategy = new DiamondMovementStrategy();
         } else {
             boardFactory = new DefaultBoardFactory();
             movementStrategy = new DefaultMovementStrategy();
@@ -74,7 +73,7 @@ class GameSession {
         int numberOfPlayers = playerSockets.size();
         int total = numberOfPlayers + numberOfBots;
 
-        m_gameHandler.initializeBoard(total);
+        m_gameHandler.initialize(boardFactory, movementStrategy, total);
         m_availableColors = m_gameHandler.getPossibleColorsForPlayers(total);
 
         addPlayers(playerSockets);

@@ -16,8 +16,8 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class GameHandler {
-    private final MovementStrategy m_movementStrategy;
-    private final BoardFactory m_boardFactory;
+    private MovementStrategy m_movementStrategy;
+    private BoardFactory m_boardFactory;
     private Board m_board;
 
     public GameHandler(@Qualifier("defaultMovementStrategy") MovementStrategy ms, BoardFactory bf) {
@@ -26,10 +26,11 @@ public class GameHandler {
         m_boardFactory = bf;
     }
 
-    public void initializeBoard(int numberOfPlayers) {
-        m_board = m_boardFactory.createBoard(numberOfPlayers);
+    public void initialize(BoardFactory boardFactory, MovementStrategy movementStrategy, int numberOfPlayers) {
+        this.m_boardFactory = boardFactory;
+        this.m_movementStrategy = movementStrategy;
+        this.m_board = m_boardFactory.createBoard(numberOfPlayers);
     }
-
     public PlayerColor[] getPossibleColorsForPlayers(int numberOfPlayers) {
         return switch (numberOfPlayers) {
             case 1 -> new PlayerColor[]{PlayerColor.RED};

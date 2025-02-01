@@ -5,12 +5,16 @@ import org.chinesecheckers.server.serverBoard.Cell;
 import org.springframework.stereotype.Component;
 
 @Component
-public class DiamondMovementVerifier extends DefaultMovementStrategy {
+public class DiamondMovementStrategy extends DefaultMovementStrategy {
 
     @Override
     public int verifyMove(Board board, int x1, int y1, int x2, int y2, MoveValidationCondition[] moveValidationConditions) {
         Cell from = board.getField(x1, y1);
         Cell to = board.getField(x2, y2);
+
+        if (from == null || to == null) {
+            return 0; // Invalid move if either cell is null
+        }
 
         if (from.isKing()) {
             // King piece can jump over common pieces
