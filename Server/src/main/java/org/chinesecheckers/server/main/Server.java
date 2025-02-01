@@ -92,7 +92,19 @@ class Server {
     private void replayRecordedGame() {
         List<Game> games = gameRepository.findAllGames();
         if (games.isEmpty()) {
-            System.out.println("No recorded games found.");
+            System.out.println("No recorded games found. Please create a new game.");
+            try {
+                readNumberOfPlayers();
+                readNumberOfBots();
+                if (m_numberOfBots > 0) {
+                    readSleepDuration();
+                }
+                m_numberOfPlayers -= m_numberOfBots;
+                readGameMode();
+                startMatch(m_numberOfPlayers, m_gameMode, m_numberOfBots, m_sleepDuration);
+            } catch (Exception e) {
+                System.out.println("Error: " + e.getMessage());
+            }
             return;
         }
 
@@ -112,6 +124,7 @@ class Server {
         System.out.println("Replaying game ID: " + selectedGame.getId() + ", Mode: " + selectedGame.getMode());
 
         try {
+            m_playerSockets = new ArrayList<>(); // Initialize m_playerSockets as an empty list
             m_gameSession.initialize(new ArrayList<>(), selectedGame.getMode(), 0, m_sleepDuration);
             m_gameSession.replayMoves(selectedGame.getId());
         } catch (Exception e) {
