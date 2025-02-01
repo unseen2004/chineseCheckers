@@ -37,7 +37,7 @@ class GameSession {
 
     @Autowired
     private GameHandler m_gameHandler;
-    private  PlayerColor[] m_availableColors;
+    private PlayerColor[] m_availableColors;
     private List<Player> m_players;
     private JumpVerificationCondition m_jumpStatus;
     private PawnVerificationCondition m_previousPawn;
@@ -56,7 +56,7 @@ class GameSession {
         this.m_availableColors = new PlayerColor[0]; // Initialize with an empty array
     }
 
-    void initialize(List<Socket> playerSockets, String gameMode, int numberOfBots) throws Exception {
+    void initialize(List<Socket> playerSockets, String gameMode, int numberOfBots, int sleepDuration) throws Exception {
         BoardFactory boardFactory;
         MovementStrategy movementStrategy;
 
@@ -75,7 +75,7 @@ class GameSession {
         m_availableColors = m_gameHandler.getPossibleColorsForPlayers(total);
 
         addPlayers(playerSockets);
-        addBots(numberOfBots, playerSockets.size());
+        addBots(numberOfBots, playerSockets.size(), sleepDuration);
 
         // Initialize and save the game
         currentGame = new Game();
@@ -91,10 +91,10 @@ class GameSession {
         }
     }
 
-    private void addBots(int numberOfBots, int colorIndex) {
+    private void addBots(int numberOfBots, int colorIndex, int sleepDuration) {
         for (int i = colorIndex; i < numberOfBots + colorIndex; i++) {
             System.out.print("Added bot");
-            m_players.add(new Bot(m_availableColors[i], m_gameHandler));
+            m_players.add(new Bot(m_availableColors[i], m_gameHandler, sleepDuration));
         }
     }
 

@@ -17,13 +17,15 @@ public class Bot extends Player {
     private final JumpVerificationCondition m_jumpVerificationCondition;
     private final PawnVerificationCondition m_pawnVerificationCondition;
     private final MoveValidationCondition[] m_verifyConditions;
+    private final int sleepDuration;
     List<Move> moves;
     boolean strayMode = false;
     private GridCoordinate m_target;
     private int m_skipCount;
 
-    public Bot(PlayerColor color, GameHandler gameHandler) {
+    public Bot(PlayerColor color, GameHandler gameHandler,int sleepDuration ) {
         this.m_gameHandler = gameHandler;
+        this.sleepDuration = sleepDuration;
         moves = new ArrayList<>();
         this.color = Colors.valueOf(color.name());
         setTarget();
@@ -41,7 +43,7 @@ public class Bot extends Player {
     @Override
     public String readResponse() {
         try {
-            TimeUnit.MILLISECONDS.sleep(400);
+            TimeUnit.MILLISECONDS.sleep(sleepDuration);
         } catch (InterruptedException ex) {
             throw new RuntimeException();
         }
@@ -92,7 +94,7 @@ public class Bot extends Player {
     }
 
     Move bestMove() {
-        return !moves.isEmpty() ? moves.get(0) : null;
+        return !moves.isEmpty() ? moves.getFirst() : null;
     }
 
     Double calcDistance(GridCoordinate c1, GridCoordinate c2) {
@@ -186,11 +188,7 @@ public class Bot extends Player {
 
         @Override
         public String toString() {
-            return "Move{" +
-                    "from=" + from +
-                    ", to=" + to +
-                    ", value=" + value +
-                    '}';
+            return "Move{" + "from=" + from + ", to=" + to + ", value=" + value + '}';
         }
     }
 }

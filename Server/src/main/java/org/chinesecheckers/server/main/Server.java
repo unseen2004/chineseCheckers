@@ -1,3 +1,4 @@
+// Server.java
 package org.chinesecheckers.server.main;
 
 import org.chinesecheckers.server.model.Game;
@@ -25,6 +26,7 @@ class Server {
     private int m_numberOfPlayers = 1;
     private String m_gameMode = "default"; // Add game mode
     private int m_numberOfBots = 0;
+    private int m_sleepDuration = 400; // Default sleep duration
 
     Server(int port) throws Exception {
         System.out.println("Server is starting");
@@ -45,9 +47,12 @@ class Server {
                 if (choice == 1) {
                     readNumberOfPlayers();
                     readNumberOfBots();
+                    if (m_numberOfBots > 0) {
+                        readSleepDuration();
+                    }
                     m_numberOfPlayers -= m_numberOfBots;
                     readGameMode();
-                    startMatch(m_numberOfPlayers, m_gameMode, m_numberOfBots);
+                    startMatch(m_numberOfPlayers, m_gameMode, m_numberOfBots, m_sleepDuration);
                 } else if (choice == 2) {
                     replayRecordedGame();
                 }
@@ -60,16 +65,16 @@ class Server {
         }
     }
 
-    private void startMatch(int numberOfPlayers, String gameMode, int numberOfBots) throws Exception {
+    private void startMatch(int numberOfPlayers, String gameMode, int numberOfBots, int sleepDuration) throws Exception {
         System.out.println("Game starts: " + numberOfPlayers + " players and " + numberOfBots + " bots");
 
-        createMatch(numberOfPlayers, gameMode, numberOfBots);
+        createMatch(numberOfPlayers, gameMode, numberOfBots, sleepDuration);
         m_gameSession.start();
     }
 
-    private void createMatch(int numberOfPlayers, String gameMode, int numberOfBots) throws Exception {
+    private void createMatch(int numberOfPlayers, String gameMode, int numberOfBots, int sleepDuration) throws Exception {
         connectPlayers(numberOfPlayers);
-        m_gameSession.initialize(m_playerSockets, gameMode, numberOfBots);
+        m_gameSession.initialize(m_playerSockets, gameMode, numberOfBots, sleepDuration);
     }
 
     private void connectPlayers(int numberOfPlayersToConnect) throws Exception {
@@ -107,7 +112,7 @@ class Server {
         System.out.println("Replaying game ID: " + selectedGame.getId() + ", Mode: " + selectedGame.getMode());
 
         try {
-            m_gameSession.initialize(new ArrayList<>(), selectedGame.getMode(), 0);
+            m_gameSession.initialize(new ArrayList<>(), selectedGame.getMode(), 0, m_sleepDuration);
             m_gameSession.replayMoves(selectedGame.getId());
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
@@ -149,6 +154,28 @@ class Server {
                     m_numberOfBots = newNumberOfBots;
                 } else {
                     System.out.println("Wrong number. Should be between 0 and " + m_numberOfPlayers);
+                    inputCorrect = false;
+                }
+            } catch (Exception e) {
+                System.out.println("Wrong number.");
+                inputCorrect = false;
+            }
+        } while (!inputCorrect);
+    }
+
+    private void readSleepDuration() {
+        boolean inputCorrect;
+        do {
+            inputCorrect = true;
+            System.out.println("Enter sleep duration for bots (in milliseconds):");
+            Scanner scanner = new Scanner(System.in);
+
+            try {
+                int newSleepDuration = scanner.nextInt();
+                if (newSleepDuration > 0) {
+                    m_sleepDuration = newSleepDuration;
+                } else {
+                    System.out.println("Wrong number. Should be greater than 0");
                     inputCorrect = false;
                 }
             } catch (Exception e) {
