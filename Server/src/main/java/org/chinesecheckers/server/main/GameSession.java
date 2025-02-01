@@ -1,5 +1,12 @@
 package org.chinesecheckers.server.main;
 
+import org.chinesecheckers.server.model.Game;
+import org.chinesecheckers.server.model.Move;
+import org.chinesecheckers.server.repository.GameRepository;
+import org.chinesecheckers.server.repository.MoveRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import org.chinesecheckers.common.Coord;
 import org.chinesecheckers.common.PlayerColor;
 import org.chinesecheckers.common.Response;
@@ -17,11 +24,19 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
+@Component
 class GameSession {
-    private final GameHandler m_gameHandler;
-    private List<Player> m_players;
-    private final PlayerColor[] m_availableColors;
+    @Autowired
+    private GameRepository gameRepository;
 
+    @Autowired
+    private MoveRepository moveRepository;
+
+    private Game currentGame;
+
+    private final GameHandler m_gameHandler;
+    private final PlayerColor[] m_availableColors;
+    private List<Player> m_players;
     private JumpVerificationCondition m_jumpStatus;
     private PawnVerificationCondition m_previousPawn;
     private MoveValidationCondition[] m_conditions;
@@ -56,6 +71,11 @@ class GameSession {
 
         addPlayers(playerSockets);
         addBots(numberOfBots, playerSockets.size());
+
+        // Initialize and save the game
+        currentGame = new Game();
+        currentGame.setMode(gameMode);
+        gameRepository.save(currentGame);
     }
 
     private void addPlayers(List<Socket> playerSockets) throws Exception {
@@ -66,16 +86,12 @@ class GameSession {
         }
     }
 
-    private void addBots(int numberOfBots, int colorIndex)
-    {
-        for (int i = colorIndex; i < numberOfBots + colorIndex; i++)
-        {
+    private void addBots(int numberOfBots, int colorIndex) {
+        for (int i = colorIndex; i < numberOfBots + colorIndex; i++) {
             System.out.print("Added bot");
             m_players.add(new Bot(m_availableColors[i], m_gameHandler));
         }
     }
-
-
 
     void start() {
         try {
@@ -212,6 +228,15 @@ class GameSession {
         m_jumpStatus.setStatus(m_moveDistance);
         m_previousPawn.setPreviousXY(toX, toY);
         m_gameHandler.makeMove(fromX, fromY, toX, toY);
+
+        Move move = new Move();
+        move.setFromX(fromX);
+        move.setFromY(fromY);
+        move.setToX(toX);
+        move.setToY(toY);
+        move.setGame(currentGame);
+        moveRepository.save(move);
+
         boolean playerFinished = m_gameHandler.isWinner(player.getColor());
 
         if (playerFinished) {
@@ -298,7 +323,7 @@ class GameSession {
     private String getMovesCommand(List<Coord> possibleMoves) {
         StringBuilder sb = new StringBuilder();
         for (Coord c : possibleMoves) {
-            if (!sb.toString().equals("")) {
+            if (!sb.toString().isEmpty()) {
                 sb.append(" ");
             }
             sb.append(c.getX()).append(" ").append(c.getY());
