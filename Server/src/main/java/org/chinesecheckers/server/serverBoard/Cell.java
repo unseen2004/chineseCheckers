@@ -10,6 +10,7 @@ public class Cell {
     private boolean m_playable;
     private boolean m_isKing;
     private boolean m_special; // Add this field
+    private double alpha; // Add this field
 
     public Cell() {
     }
@@ -21,9 +22,17 @@ public class Cell {
         this.m_playable = m_playable;
         this.m_isKing = m_isKing;
         this.m_special = false; // Initialize the special field
+        this.alpha = 1.0; // Initialize the alpha value to fully opaque
+
+    }
+    public double getAlpha() {
+        return alpha;
     }
 
-    public PlayerColor getCurrentColor() {
+    public void setAlpha(double alpha) {
+        this.alpha = alpha;
+    }
+        public PlayerColor getCurrentColor() {
         return m_currentColor;
     }
 

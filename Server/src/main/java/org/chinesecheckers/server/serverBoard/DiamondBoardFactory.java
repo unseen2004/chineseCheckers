@@ -22,9 +22,11 @@ protected void setPlayer(Board board, PlayerColor color, int[][] positions, bool
             case "8,15":
             case "2,13":
             case "1,6":
-                Cell cell = createCell(color.YELLOW, active);
+                Cell cell = createCell(color, active);// TODO: Change king color
                 cell.setKing(true);
+                cell.setAlpha(0.5);
                 board.setCell(pos[0], pos[1], cell);
+                System.out.println("king is " + pos[0] +" " + pos[1]);
                 break;
             default:
                 Cell defaultCell = createCell(color, active);
