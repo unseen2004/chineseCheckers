@@ -1,3 +1,4 @@
+// GameSession.java
 package org.chinesecheckers.server.main;
 
 import org.chinesecheckers.server.model.Game;
@@ -19,7 +20,7 @@ import org.chinesecheckers.server.player.PlayerLeftException;
 import org.chinesecheckers.server.serverBoard.BoardFactory;
 import org.chinesecheckers.server.serverBoard.DefaultBoardFactory;
 import org.chinesecheckers.server.serverBoard.DiamondBoardFactory;
-
+import org.chinesecheckers.server.movement.GameHandler;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,8 +35,9 @@ class GameSession {
 
     private Game currentGame;
 
-    private final GameHandler m_gameHandler;
-    private final PlayerColor[] m_availableColors;
+    @Autowired
+    private GameHandler m_gameHandler;
+    private  PlayerColor[] m_availableColors;
     private List<Player> m_players;
     private JumpVerificationCondition m_jumpStatus;
     private PawnVerificationCondition m_previousPawn;
@@ -45,7 +47,16 @@ class GameSession {
     private boolean m_turnFinished;
     private int m_place;
 
-    GameSession(List<Socket> playerSockets, String gameMode, int numberOfBots) throws Exception {
+    @Autowired
+    GameSession(GameHandler gameHandler) {
+        this.m_gameHandler = gameHandler;
+        this.m_players = new ArrayList<>();
+        this.m_turnFinished = true;
+        this.m_place = 1;
+        this.m_availableColors = new PlayerColor[0]; // Initialize with an empty array
+    }
+
+    void initialize(List<Socket> playerSockets, String gameMode, int numberOfBots) throws Exception {
         BoardFactory boardFactory;
         MovementStrategy movementStrategy;
 
@@ -57,17 +68,11 @@ class GameSession {
             movementStrategy = new DefaultMovementStrategy();
         }
 
-        m_gameHandler = new GameHandler(movementStrategy, boardFactory);
-        m_players = new ArrayList<>();
-
         int numberOfPlayers = playerSockets.size();
-
         int total = numberOfPlayers + numberOfBots;
+
         m_gameHandler.initializeBoard(total);
         m_availableColors = m_gameHandler.getPossibleColorsForPlayers(total);
-
-        m_turnFinished = true;
-        m_place = 1;
 
         addPlayers(playerSockets);
         addBots(numberOfBots, playerSockets.size());
@@ -151,6 +156,9 @@ class GameSession {
 
     private Response readResponseFromPlayer(Player player) throws PlayerLeftException {
         String line = player.readResponse();
+        if (line == null) {
+            throw new PlayerLeftException("Player " + player.getColor().toString() + " left the game.");
+        }
         Response[] responses = ResponseInterpreter.getResponses(line);
         if (responses.length != 1) {
             System.err.println("Error " + player.getColor().toString());
@@ -341,5 +349,19 @@ class GameSession {
 
         m_players.clear();
         m_players = null;
+    }
+
+    // New method to replay moves
+    void replayMoves(Long gameId) {
+        List<Move> moves = moveRepository.findMovesByGameId(gameId);
+        for (Move move : moves) {
+            m_gameHandler.makeMove(move.getFromX(), move.getFromY(), move.getToX(), move.getToY());
+            sendToAll("BOARD " + m_gameHandler.getBoardAsString());
+            try {
+                Thread.sleep(1000); // Add delay to simulate real-time replay
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
     }
 }

@@ -2,10 +2,11 @@ package org.chinesecheckers.server.movement;
 
 import org.chinesecheckers.server.serverBoard.Board;
 import org.chinesecheckers.server.serverBoard.IllegalCellException;
+import org.springframework.stereotype.Component;
 
 import static org.chinesecheckers.common.PlayerColor.NONE;
 
-
+@Component
 public class DefaultMovementStrategy implements MovementStrategy {
 
     @Override

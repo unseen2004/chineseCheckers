@@ -11,12 +11,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
+
+@Component
 public class GameHandler {
     private final MovementStrategy m_movementStrategy;
     private final BoardFactory m_boardFactory;
     private Board m_board;
 
-    public GameHandler(MovementStrategy ms, BoardFactory bf) {
+    public GameHandler(@Qualifier("defaultMovementStrategy") MovementStrategy ms, BoardFactory bf) {
         m_board = new DefaultBoard();
         m_movementStrategy = ms;
         m_boardFactory = bf;

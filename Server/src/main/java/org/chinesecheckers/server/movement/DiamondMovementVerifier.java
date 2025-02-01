@@ -2,7 +2,9 @@ package org.chinesecheckers.server.movement;
 
 import org.chinesecheckers.server.serverBoard.Board;
 import org.chinesecheckers.server.serverBoard.Cell;
+import org.springframework.stereotype.Component;
 
+@Component
 public class DiamondMovementVerifier extends DefaultMovementStrategy {
 
     @Override
