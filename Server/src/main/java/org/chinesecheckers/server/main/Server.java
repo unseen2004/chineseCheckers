@@ -89,6 +89,7 @@ class Server {
         }
     }
 
+    // Server.java
     private void replayRecordedGame() {
         List<Game> games = gameRepository.findAllGames();
         if (games.isEmpty()) {

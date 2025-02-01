@@ -57,6 +57,9 @@ class GameSession {
     }
 
     void initialize(List<Socket> playerSockets, String gameMode, int numberOfBots, int sleepDuration) throws Exception {
+        m_players.clear(); // Clear the players list at the beginning
+
+
         BoardFactory boardFactory;
         MovementStrategy movementStrategy;
 
