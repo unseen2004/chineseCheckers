@@ -24,7 +24,7 @@ protected void setPlayer(Board board, PlayerColor color, int[][] positions, bool
             case "1,6":
                 Cell cell = createCell(color, active);// TODO: Change king color
                 cell.setKing(true);
-                cell.setAlpha(0.5);
+                cell.setM_alpha(0.5);
                 board.setCell(pos[0], pos[1], cell);
                 System.out.println("king is " + pos[0] +" " + pos[1]);
                 break;

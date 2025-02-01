@@ -5,17 +5,33 @@ import java.util.List;
 
 import static java.lang.Character.isDigit;
 
+/**
+ * Represents a message from the client in the Chinese Checkers game.
+ */
 public class ClientMessage {
     private final String m_code;
     private final int[] m_numbers;
     private final String[] m_words;
 
+    /**
+     * Constructs a ClientMessage with the specified code, numbers, and words.
+     *
+     * @param m_code    the code of the message
+     * @param m_numbers the numbers in the message
+     * @param m_words   the words in the message
+     */
     ClientMessage(String m_code, int[] m_numbers, String[] m_words) {
         this.m_code = m_code;
         this.m_numbers = m_numbers;
         this.m_words = m_words;
     }
 
+    /**
+     * Parses the responses from the server into an array of ClientMessage objects.
+     *
+     * @param line the line of responses from the server
+     * @return an array of ClientMessage objects
+     */
     public static ClientMessage[] getResponses(String line) {
         line = line.replace("\n", "");
 
@@ -51,14 +67,29 @@ public class ClientMessage {
         return response.toArray(new ClientMessage[0]);
     }
 
+    /**
+     * Gets the code of the message.
+     *
+     * @return the code of the message
+     */
     public String getCode() {
         return m_code;
     }
 
+    /**
+     * Gets the numbers in the message.
+     *
+     * @return the numbers in the message
+     */
     public int[] getNumbers() {
         return m_numbers;
     }
 
+    /**
+     * Gets the words in the message.
+     *
+     * @return the words in the message
+     */
     public String[] getWords() {
         return m_words;
     }

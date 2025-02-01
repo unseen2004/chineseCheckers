@@ -12,10 +12,10 @@
     <ToolBar>
         <Button text="CONNECT" onAction="#onNewConnection"/>
     </ToolBar>
-    <Label fx:id="infoBar" maxWidth="1.7976931348623157E308" prefHeight="18.0" prefWidth="800.0"
+    <Label fx:id="m_infoBar" maxWidth="1.7976931348623157E308" prefHeight="18.0" prefWidth="800.0"
            style="-fx-background-color: white; -fx-alignment: center;" text="connect with server"
            textAlignment="CENTER" textFill="WHITE"/>
-    <Pane fx:id="boardPane" prefHeight="200.0" prefWidth="800.0" style="-fx-background-color: white;"
+    <Pane fx:id="m_boardPane" prefHeight="200.0" prefWidth="800.0" style="-fx-background-color: white;"
           VBox.vgrow="ALWAYS">
         <Circle disable="true" fill="#ffffff00" layoutX="88.0" layoutY="40.0" radius="24.0" stroke="#00000080"
                 strokeType="INSIDE" visible="false"/>

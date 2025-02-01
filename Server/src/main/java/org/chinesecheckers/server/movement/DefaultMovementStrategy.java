@@ -1,28 +1,37 @@
 package org.chinesecheckers.server.movement;
 
 import org.chinesecheckers.server.serverBoard.Board;
-import org.chinesecheckers.server.serverBoard.IllegalCellException;
-import org.springframework.stereotype.Component;
 import org.chinesecheckers.server.serverBoard.GameException;
+import org.springframework.stereotype.Component;
 
 import static org.chinesecheckers.common.PlayerColor.NONE;
 
+/**
+ * Implements the default movement strategy for the Chinese Checkers game.
+ */
 @Component
 public class DefaultMovementStrategy implements MovementStrategy {
 
+    /**
+     * Verifies the validity of a move on the board.
+     *
+     * @param board                    the game board
+     * @param x1                       the starting x-coordinate
+     * @param y1                       the starting y-coordinate
+     * @param x2                       the ending x-coordinate
+     * @param y2                       the ending y-coordinate
+     * @param moveValidationConditions the conditions to validate the move
+     * @return the distance of the move if valid, otherwise 0
+     */
     @Override
     public int verifyMove(Board board, int x1, int y1, int x2, int y2, MoveValidationCondition[] moveValidationConditions) {
-
         if (moveValidationConditions.length != 2) {
             return -1;
         }
         int dx = x2 - x1;
         int dy = y2 - y1;
 
-        if (IllegalCells(board, x1, y1, x2, y2)) {
-            return 0;
-        }
-        if (isWrongPawnState(board, x1, y1, x2, y2)) {
+        if (IllegalCells(board, x1, y1, x2, y2) || isWrongPawnState(board, x1, y1, x2, y2)) {
             return 0;
         }
         if (isNotPreviousPawn(moveValidationConditions)) {
@@ -30,19 +39,14 @@ public class DefaultMovementStrategy implements MovementStrategy {
         }
 
         switch (Math.abs(dy)) {
-            // Same row
             case 0: {
-                // x dist
                 switch (Math.abs(dx)) {
-
                     case 0: {
                         return 0;
                     }
-                    // Short move
                     case 1: {
                         return moveValidationConditions[0].verify() ? 1 : 0;
                     }
-                    // Long Move?
                     case 2: {
                         if (!board.getField((x1 + x2) / 2, y1).getCurrentColor().equals(NONE)) {
                             return 2;
@@ -88,7 +92,6 @@ public class DefaultMovementStrategy implements MovementStrategy {
                         return 0;
                     }
                 }
-
             }
             default: {
                 return 0;
@@ -96,21 +99,54 @@ public class DefaultMovementStrategy implements MovementStrategy {
         }
     }
 
-
+    /**
+     * Checks if the specified cells are illegal.
+     *
+     * @param board the game board
+     * @param x1    the starting x-coordinate
+     * @param y1    the starting y-coordinate
+     * @param x2    the ending x-coordinate
+     * @param y2    the ending y-coordinate
+     * @return true if any of the cells are illegal, otherwise false
+     */
     private boolean IllegalCells(Board board, int x1, int y1, int x2, int y2) {
         return board.getField(x1, y1) == null || board.getField(x2, y2) == null || !board.getField(x1, y1).isPlayable() || !board.getField(x2, y2).isPlayable();
     }
 
+    /**
+     * Checks if the pawn state is incorrect for the move.
+     *
+     * @param board the game board
+     * @param x1    the starting x-coordinate
+     * @param y1    the starting y-coordinate
+     * @param x2    the ending x-coordinate
+     * @param y2    the ending y-coordinate
+     * @return true if the pawn state is incorrect, otherwise false
+     */
     private boolean isWrongPawnState(Board board, int x1, int y1, int x2, int y2) {
         return !board.getField(x2, y2).getCurrentColor().equals(NONE) || board.getField(x1, y1).getCurrentColor().equals(NONE);
     }
 
-
+    /**
+     * Checks if the move is not the previous pawn.
+     *
+     * @param moveValidationConditions the conditions to validate the move
+     * @return true if the move is not the previous pawn, otherwise false
+     */
     private boolean isNotPreviousPawn(MoveValidationCondition[] moveValidationConditions) {
         return !moveValidationConditions[0].verify() && moveValidationConditions[1].verify();
     }
 
-
+    /**
+     * Makes a move on the board.
+     *
+     * @param board the game board
+     * @param x1    the starting x-coordinate
+     * @param y1    the starting y-coordinate
+     * @param x2    the ending x-coordinate
+     * @param y2    the ending y-coordinate
+     * @return the updated game board
+     */
     @Override
     public Board makeMove(Board board, int x1, int y1, int x2, int y2) {
         try {
@@ -122,4 +158,4 @@ public class DefaultMovementStrategy implements MovementStrategy {
             return board;
         }
     }
-    }
+}

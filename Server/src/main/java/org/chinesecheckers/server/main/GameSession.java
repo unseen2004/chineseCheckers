@@ -1,4 +1,3 @@
-// GameSession.java
 package org.chinesecheckers.server.main;
 
 import org.chinesecheckers.server.model.Game;
@@ -25,15 +24,18 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Manages a game session, including initializing the game, handling player moves, and managing game state.
+ */
 @Component
 class GameSession {
     @Autowired
-    private GameRepository gameRepository;
+    private GameRepository m_gameRepository;
 
     @Autowired
-    private MoveRepository moveRepository;
+    private MoveRepository m_moveRepository;
 
-    private Game currentGame;
+    private Game m_currentGame;
 
     @Autowired
     private GameHandler m_gameHandler;
@@ -47,6 +49,11 @@ class GameSession {
     private boolean m_turnFinished;
     private int m_place;
 
+    /**
+     * Constructs a GameSession with the specified GameHandler.
+     *
+     * @param gameHandler the GameHandler to use for this session
+     */
     @Autowired
     GameSession(GameHandler gameHandler) {
         this.m_gameHandler = gameHandler;
@@ -56,37 +63,52 @@ class GameSession {
         this.m_availableColors = new PlayerColor[0]; // Initialize with an empty array
     }
 
-void initialize(List<Socket> playerSockets, String gameMode, int numberOfBots, int sleepDuration) throws Exception {
-    m_players.clear(); // Clear the players list at the beginning
+    /**
+     * Initializes the game session with the specified player sockets, game mode, number of bots, and sleep duration.
+     *
+     * @param playerSockets the sockets of the players
+     * @param gameMode the mode of the game
+     * @param numberOfBots the number of bots
+     * @param sleepDuration the sleep duration for bots
+     * @throws Exception if an error occurs during initialization
+     */
+    void initialize(List<Socket> playerSockets, String gameMode, int numberOfBots, int sleepDuration) throws Exception {
+        m_players.clear(); // Clear the players list at the beginning
 
-    BoardFactory boardFactory;
-    MovementStrategy movementStrategy;
+        BoardFactory boardFactory;
+        MovementStrategy movementStrategy;
 
-    if ("diamond".equalsIgnoreCase(gameMode)) {
-        boardFactory = new DiamondBoardFactory();
-        movementStrategy = new DiamondMovementStrategy();
-    } else {
-        boardFactory = new DefaultBoardFactory();
-        movementStrategy = new DefaultMovementStrategy();
+        if ("diamond".equalsIgnoreCase(gameMode)) {
+            boardFactory = new DiamondBoardFactory();
+            movementStrategy = new DiamondMovementStrategy();
+        } else {
+            boardFactory = new DefaultBoardFactory();
+            movementStrategy = new DefaultMovementStrategy();
+        }
+
+        int numberOfPlayers = playerSockets.size();
+        int total = numberOfPlayers + numberOfBots;
+
+        m_gameHandler.initialize(boardFactory, movementStrategy, total);
+        m_availableColors = m_gameHandler.getPossibleColorsForPlayers(total);
+
+        addPlayers(playerSockets);
+        addBots(numberOfBots, playerSockets.size(), sleepDuration);
+
+        // Initialize and save the game
+        m_currentGame = new Game();
+        m_currentGame.setMode(gameMode);
+        m_currentGame.setNumberOfPlayers(numberOfPlayers);
+        m_currentGame.setNumberOfBots(numberOfBots); // Save the number of bots
+        m_gameRepository.save(m_currentGame);
     }
 
-    int numberOfPlayers = playerSockets.size();
-    int total = numberOfPlayers + numberOfBots;
-
-    m_gameHandler.initialize(boardFactory, movementStrategy, total);
-    m_availableColors = m_gameHandler.getPossibleColorsForPlayers(total);
-
-    addPlayers(playerSockets);
-    addBots(numberOfBots, playerSockets.size(), sleepDuration);
-
-    // Initialize and save the game
-    currentGame = new Game();
-    currentGame.setMode(gameMode);
-    currentGame.setNumberOfPlayers(numberOfPlayers);
-    currentGame.setNumberOfBots(numberOfBots); // Save the number of bots
-    gameRepository.save(currentGame);
-}
-
+    /**
+     * Adds players to the game session.
+     *
+     * @param playerSockets the sockets of the players
+     * @throws Exception if an error occurs while adding players
+     */
     private void addPlayers(List<Socket> playerSockets) throws Exception {
         int numberOfPlayers = playerSockets.size();
 
@@ -95,6 +117,13 @@ void initialize(List<Socket> playerSockets, String gameMode, int numberOfBots, i
         }
     }
 
+    /**
+     * Adds bots to the game session.
+     *
+     * @param numberOfBots the number of bots
+     * @param colorIndex the starting index for bot colors
+     * @param sleepDuration the sleep duration for bots
+     */
     private void addBots(int numberOfBots, int colorIndex, int sleepDuration) {
         for (int i = colorIndex; i < numberOfBots + colorIndex; i++) {
             System.out.print("Added bot");
@@ -102,6 +131,9 @@ void initialize(List<Socket> playerSockets, String gameMode, int numberOfBots, i
         }
     }
 
+    /**
+     * Starts the game session.
+     */
     void start() {
         try {
             sendWelcomeToPlayers();
@@ -116,17 +148,28 @@ void initialize(List<Socket> playerSockets, String gameMode, int numberOfBots, i
         }
     }
 
+    /**
+     * Sends a welcome message to all players.
+     */
     private void sendWelcomeToPlayers() {
         for (int i = 0; i < m_players.size(); i++) {
             m_players.get(i).sendCommand("WELCOME " + m_availableColors[i]);
         }
     }
 
+    /**
+     * Sends the start board to all players.
+     */
     private void sendStartBoardToPlayers() {
         String command = "START@BOARD " + m_gameHandler.getBoardAsString();
         sendToAll(command);
     }
 
+    /**
+     * Plays the game by iterating through player turns until all players have finished.
+     *
+     * @throws Exception if an error occurs during gameplay
+     */
     private void play() throws Exception {
         int indexOfPlayerHavingTurn = 0;
         do {
@@ -136,6 +179,12 @@ void initialize(List<Socket> playerSockets, String gameMode, int numberOfBots, i
         System.out.println("Match ended");
     }
 
+    /**
+     * Plays a turn for the specified player.
+     *
+     * @param player the player whose turn it is
+     * @throws PlayerLeftException if the player leaves the game
+     */
     private void playTurnForPlayer(Player player) throws PlayerLeftException {
         setDefaultSettingsForNewTurn();
         player.sendCommand("YOU");
@@ -143,6 +192,9 @@ void initialize(List<Socket> playerSockets, String gameMode, int numberOfBots, i
         readResponsesAndExecute(player);
     }
 
+    /**
+     * Sets the default settings for a new turn.
+     */
     private void setDefaultSettingsForNewTurn() {
         m_jumpStatus = new JumpVerificationCondition(0);
         m_previousPawn = new PawnVerificationCondition();
@@ -151,6 +203,12 @@ void initialize(List<Socket> playerSockets, String gameMode, int numberOfBots, i
         m_turnFinished = false;
     }
 
+    /**
+     * Reads responses from the specified player and executes them.
+     *
+     * @param player the player to read responses from
+     * @throws PlayerLeftException if the player leaves the game
+     */
     private void readResponsesAndExecute(Player player) throws PlayerLeftException {
         do {
             Response response = readResponseFromPlayer(player);
@@ -158,6 +216,13 @@ void initialize(List<Socket> playerSockets, String gameMode, int numberOfBots, i
         } while (!m_turnFinished);
     }
 
+    /**
+     * Reads a response from the specified player.
+     *
+     * @param player the player to read the response from
+     * @return the response from the player
+     * @throws PlayerLeftException if the player leaves the game
+     */
     private Response readResponseFromPlayer(Player player) throws PlayerLeftException {
         String line = player.readResponse();
         if (line == null) {
@@ -170,28 +235,38 @@ void initialize(List<Socket> playerSockets, String gameMode, int numberOfBots, i
         return responses[0];
     }
 
+    /**
+     * Executes the specified response from the player.
+     *
+     * @param player the player who sent the response
+     * @param response the response to execute
+     */
     private void executeResponse(Player player, Response response) {
         String responseType = response.getCode();
         switch (responseType) {
-            case "SKIP":
-                sendStopAndFinishTurn(player);
-                break;
-            case "CLUES":
-                executeMovesResponse(player, response);
-                break;
-            case "MOVE":
-                executeMoveResponse(player, response);
-                break;
-            default:
-                sendNokAndPrintIncorrectResponse(player);
+            case "SKIP" -> sendStopAndFinishTurn(player);
+            case "CLUES" -> executeMovesResponse(player, response);
+            case "MOVE" -> executeMoveResponse(player, response);
+            default -> sendNokAndPrintIncorrectResponse(player);
         }
     }
 
+    /**
+     * Sends a stop command to the player and finishes their turn.
+     *
+     * @param player the player to send the stop command to
+     */
     private void sendStopAndFinishTurn(Player player) {
         player.sendCommand("STOP");
         m_turnFinished = true;
     }
 
+    /**
+     * Executes a moves response from the player.
+     *
+     * @param player the player who sent the response
+     * @param response the response to execute
+     */
     private void executeMovesResponse(Player player, Response response) {
         boolean correctCluesResponse = response.getCode().equals("CLUES") && response.getNumbers().length == 2;
         if (correctCluesResponse) {
@@ -203,6 +278,13 @@ void initialize(List<Socket> playerSockets, String gameMode, int numberOfBots, i
         }
     }
 
+    /**
+     * Sends the possible moves for the specified coordinates to the player.
+     *
+     * @param player the player to send the moves to
+     * @param x the x-coordinate
+     * @param y the y-coordinate
+     */
     private void sendMoves(Player player, int x, int y) {
         ((PawnVerificationCondition) m_conditions[1]).setCurrentXY(x, y);
 
@@ -212,6 +294,12 @@ void initialize(List<Socket> playerSockets, String gameMode, int numberOfBots, i
         player.sendCommand(command);
     }
 
+    /**
+     * Executes a move response from the player.
+     *
+     * @param player the player who sent the response
+     * @param response the response to execute
+     */
     private void executeMoveResponse(Player player, Response response) {
         boolean correctMoveResponse = response.getCode().equals("MOVE") && response.getNumbers().length == 4;
         if (correctMoveResponse) {
@@ -225,6 +313,15 @@ void initialize(List<Socket> playerSockets, String gameMode, int numberOfBots, i
         }
     }
 
+    /**
+     * Verifies and executes a move from the player.
+     *
+     * @param player the player who sent the move
+     * @param fromX the starting x-coordinate
+     * @param fromY the starting y-coordinate
+     * @param toX the ending x-coordinate
+     * @param toY the ending y-coordinate
+     */
     private void verifyMoveAndExecute(Player player, int fromX, int fromY, int toX, int toY) {
         m_previousPawn.setCurrentXY(fromX, fromY);
 
@@ -236,6 +333,15 @@ void initialize(List<Socket> playerSockets, String gameMode, int numberOfBots, i
         }
     }
 
+    /**
+     * Makes a move for the player and updates the game state.
+     *
+     * @param player the player making the move
+     * @param fromX the starting x-coordinate
+     * @param fromY the starting y-coordinate
+     * @param toX the ending x-coordinate
+     * @param toY the ending y-coordinate
+     */
     private void makeMove(Player player, int fromX, int fromY, int toX, int toY) {
         m_jumpStatus.setStatus(m_moveDistance);
         m_previousPawn.setPreviousXY(toX, toY);
@@ -246,8 +352,8 @@ void initialize(List<Socket> playerSockets, String gameMode, int numberOfBots, i
         move.setFromY(fromY);
         move.setToX(toX);
         move.setToY(toY);
-        move.setGame(currentGame);
-        moveRepository.save(move);
+        move.setGame(m_currentGame);
+        m_moveRepository.save(move);
 
         boolean playerFinished = m_gameHandler.isWinner(player.getColor());
 
@@ -262,6 +368,11 @@ void initialize(List<Socket> playerSockets, String gameMode, int numberOfBots, i
         }
     }
 
+    /**
+     * Marks the player as finished and sends the appropriate responses.
+     *
+     * @param player the player who finished
+     */
     private void makePlayerFinishedAndSendResponses(Player player) {
         System.out.println("Player " + player.getColor().toString() + " ended on " + m_place);
         player.sendCommand("END " + m_place);
@@ -270,11 +381,21 @@ void initialize(List<Socket> playerSockets, String gameMode, int numberOfBots, i
         sendToAll("BOARD " + m_gameHandler.getBoardAsString());
     }
 
+    /**
+     * Sends responses after a short jump move.
+     *
+     * @param player the player who made the move
+     */
     private void sendResponsesAfterShortJump(Player player) {
         player.sendCommand("OK@STOP");
         sendToAll("BOARD " + m_gameHandler.getBoardAsString());
     }
 
+    /**
+     * Sends responses after a long jump move.
+     *
+     * @param player the player who made the move
+     */
     private void sendResponsesAfterLongJump(Player player) {
         String command = "OK@BOARD " + m_gameHandler.getBoardAsString();
         player.sendCommand(command);
@@ -283,11 +404,21 @@ void initialize(List<Socket> playerSockets, String gameMode, int numberOfBots, i
         sendToAllExceptOne(msg, player);
     }
 
+    /**
+     * Sends a NOK response and prints an incorrect response message.
+     *
+     * @param player the player who sent the incorrect response
+     */
     private void sendNokAndPrintIncorrectResponse(Player player) {
         System.err.println("Error " + player.getColor().toString());
         player.sendCommand("NOK");
     }
 
+    /**
+     * Checks if all players have finished the game.
+     *
+     * @return true if all players have finished, false otherwise
+     */
     private boolean allPlayersFinished() {
         for (Player player : m_players) {
             if (!player.isFinished()) return false;
@@ -295,6 +426,12 @@ void initialize(List<Socket> playerSockets, String gameMode, int numberOfBots, i
         return true;
     }
 
+    /**
+     * Gets the index of the next player who has not finished.
+     *
+     * @param activePlayer the index of the current active player
+     * @return the index of the next player
+     */
     private int getNextPlayerIndex(int activePlayer) {
         int nextPlayer = activePlayer;
         boolean nextPlayerFinished;
@@ -320,18 +457,35 @@ void initialize(List<Socket> playerSockets, String gameMode, int numberOfBots, i
         return nextPlayer;
     }
 
+    /**
+     * Sends a command to all players.
+     *
+     * @param command the command to send
+     */
     private void sendToAll(String command) {
         for (Player player : m_players) {
             player.sendCommand(command);
         }
     }
 
+    /**
+     * Sends a command to all players except one.
+     *
+     * @param command the command to send
+     * @param excluded the player to exclude
+     */
     private void sendToAllExceptOne(String command, Player excluded) {
         for (Player player : m_players) {
             if (player != excluded) player.sendCommand(command);
         }
     }
 
+    /**
+     * Gets the moves command for the specified possible moves.
+     *
+     * @param possibleMoves the possible moves
+     * @return the moves command
+     */
     private String getMovesCommand(List<Coord> possibleMoves) {
         StringBuilder sb = new StringBuilder();
         for (Coord c : possibleMoves) {
@@ -343,6 +497,11 @@ void initialize(List<Socket> playerSockets, String gameMode, int numberOfBots, i
         return "CLUES " + sb;
     }
 
+    /**
+     * Ends the match with an error message.
+     *
+     * @param message the error message
+     */
     private void endMatchWithError(String message) {
         for (Player player : m_players) {
             try {
@@ -355,9 +514,13 @@ void initialize(List<Socket> playerSockets, String gameMode, int numberOfBots, i
         m_players = null;
     }
 
-    // GameSession.java
+    /**
+     * Replays the moves for the specified game ID.
+     *
+     * @param gameId the ID of the game to replay
+     */
     void replayMoves(Long gameId) {
-        List<Move> moves = moveRepository.findMovesByGameId(gameId);
+        List<Move> moves = m_moveRepository.findMovesByGameId(gameId);
         for (Move move : moves) {
             System.out.println("Move from (" + move.getFromX() + ", " + move.getFromY() + ") to (" + move.getToX() + ", " + move.getToY() + ")");
             m_gameHandler.makeMove(move.getFromX(), move.getFromY(), move.getToX(), move.getToY());

@@ -1,4 +1,3 @@
-// Server.java
 package org.chinesecheckers.server.main;
 
 import org.chinesecheckers.server.model.Game;
@@ -12,15 +11,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+/**
+ * The Server class manages the server operations, including starting new games and replaying recorded games.
+ */
 @Component
 class Server {
+    private final ServerSocket m_serverSocket;
     @Autowired
     private GameRepository gameRepository;
-
     @Autowired
     private GameSession m_gameSession;
-
-    private final ServerSocket m_serverSocket;
     private List<Socket> m_playerSockets;
 
     private int m_numberOfPlayers = 1;
@@ -28,6 +28,12 @@ class Server {
     private int m_numberOfBots = 0;
     private int m_sleepDuration = 400; // Default sleep duration
 
+    /**
+     * Constructs a Server with the specified port.
+     *
+     * @param port the port to bind the server socket to
+     * @throws Exception if an error occurs while starting the server
+     */
     Server(int port) throws Exception {
         System.out.println("Server is starting");
         try {
@@ -37,6 +43,9 @@ class Server {
         }
     }
 
+    /**
+     * Runs the server, allowing users to start new games or replay recorded games.
+     */
     public void run() {
         while (true) {
             try {
@@ -65,6 +74,15 @@ class Server {
         }
     }
 
+    /**
+     * Starts a new match with the specified parameters.
+     *
+     * @param numberOfPlayers the number of players
+     * @param gameMode        the game mode
+     * @param numberOfBots    the number of bots
+     * @param sleepDuration   the sleep duration for bots
+     * @throws Exception if an error occurs while starting the match
+     */
     private void startMatch(int numberOfPlayers, String gameMode, int numberOfBots, int sleepDuration) throws Exception {
         System.out.println("Game starts: " + numberOfPlayers + " players and " + numberOfBots + " bots");
 
@@ -72,11 +90,26 @@ class Server {
         m_gameSession.start();
     }
 
+    /**
+     * Creates a new match by connecting players and initializing the game session.
+     *
+     * @param numberOfPlayers the number of players
+     * @param gameMode        the game mode
+     * @param numberOfBots    the number of bots
+     * @param sleepDuration   the sleep duration for bots
+     * @throws Exception if an error occurs while creating the match
+     */
     private void createMatch(int numberOfPlayers, String gameMode, int numberOfBots, int sleepDuration) throws Exception {
         connectPlayers(numberOfPlayers);
         m_gameSession.initialize(m_playerSockets, gameMode, numberOfBots, sleepDuration);
     }
 
+    /**
+     * Connects the specified number of players to the server.
+     *
+     * @param numberOfPlayersToConnect the number of players to connect
+     * @throws Exception if an error occurs while connecting players
+     */
     private void connectPlayers(int numberOfPlayersToConnect) throws Exception {
         m_playerSockets = new ArrayList<>();
         try {
@@ -89,51 +122,57 @@ class Server {
         }
     }
 
-private void replayRecordedGame() {
-    List<Game> games = gameRepository.findAllGames();
-    if (games.isEmpty()) {
-        System.out.println("No recorded games found. Please create a new game.");
-        try {
-            readNumberOfPlayers();
-            readNumberOfBots();
-            if (m_numberOfBots > 0) {
-                readSleepDuration();
+    /**
+     * Replays a recorded game by selecting a game from the repository and replaying its moves.
+     */
+    private void replayRecordedGame() {
+        List<Game> games = gameRepository.findAllGames();
+        if (games.isEmpty()) {
+            System.out.println("No recorded games found. Please create a new game.");
+            try {
+                readNumberOfPlayers();
+                readNumberOfBots();
+                if (m_numberOfBots > 0) {
+                    readSleepDuration();
+                }
+                m_numberOfPlayers -= m_numberOfBots;
+                readGameMode();
+                startMatch(m_numberOfPlayers, m_gameMode, m_numberOfBots, m_sleepDuration);
+            } catch (Exception e) {
+                System.out.println("Error: " + e.getMessage());
             }
-            m_numberOfPlayers -= m_numberOfBots;
-            readGameMode();
-            startMatch(m_numberOfPlayers, m_gameMode, m_numberOfBots, m_sleepDuration);
+            return;
+        }
+
+        System.out.println("Choose a game to replay:");
+        for (int i = 0; i < games.size(); i++) {
+            System.out.println((i + 1) + ") Game ID: " + games.get(i).getId() + ", Mode: " + games.get(i).getMode());
+        }
+
+        Scanner scanner = new Scanner(System.in);
+        int gameChoice = scanner.nextInt();
+        if (gameChoice < 1 || gameChoice > games.size()) {
+            System.out.println("Invalid choice.");
+            return;
+        }
+
+        Game selectedGame = games.get(gameChoice - 1);
+        System.out.println("Replaying game ID: " + selectedGame.getId() + ", Mode: " + selectedGame.getMode());
+
+        try {
+            m_playerSockets = new ArrayList<>(); // Initialize m_playerSockets as an empty list
+            int numberOfPlayers = selectedGame.getNumberOfPlayers(); // Retrieve the number of players from the game
+            int numberOfBots = selectedGame.getNumberOfBots(); // Retrieve the number of bots from the game
+            m_gameSession.initialize(new ArrayList<>(), selectedGame.getMode(), numberOfBots, m_sleepDuration);
+            m_gameSession.replayMoves(selectedGame.getId());
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
         }
-        return;
     }
 
-    System.out.println("Choose a game to replay:");
-    for (int i = 0; i < games.size(); i++) {
-        System.out.println((i + 1) + ") Game ID: " + games.get(i).getId() + ", Mode: " + games.get(i).getMode());
-    }
-
-    Scanner scanner = new Scanner(System.in);
-    int gameChoice = scanner.nextInt();
-    if (gameChoice < 1 || gameChoice > games.size()) {
-        System.out.println("Invalid choice.");
-        return;
-    }
-
-    Game selectedGame = games.get(gameChoice - 1);
-    System.out.println("Replaying game ID: " + selectedGame.getId() + ", Mode: " + selectedGame.getMode());
-
-    try {
-        m_playerSockets = new ArrayList<>(); // Initialize m_playerSockets as an empty list
-        int numberOfPlayers = selectedGame.getNumberOfPlayers(); // Retrieve the number of players from the game
-        int numberOfBots = selectedGame.getNumberOfBots(); // Retrieve the number of bots from the game
-        m_gameSession.initialize(new ArrayList<>(), selectedGame.getMode(), numberOfBots, m_sleepDuration);
-        m_gameSession.replayMoves(selectedGame.getId());
-    } catch (Exception e) {
-        System.out.println("Error: " + e.getMessage());
-    }
-}
-
+    /**
+     * Reads the number of players from the user input.
+     */
     private void readNumberOfPlayers() {
         boolean inputCorrect;
         do {
@@ -156,6 +195,9 @@ private void replayRecordedGame() {
         } while (!inputCorrect);
     }
 
+    /**
+     * Reads the number of bots from the user input.
+     */
     private void readNumberOfBots() {
         boolean inputCorrect;
         do {
@@ -178,6 +220,9 @@ private void replayRecordedGame() {
         } while (!inputCorrect);
     }
 
+    /**
+     * Reads the sleep duration for bots from the user input.
+     */
     private void readSleepDuration() {
         boolean inputCorrect;
         do {
@@ -200,6 +245,9 @@ private void replayRecordedGame() {
         } while (!inputCorrect);
     }
 
+    /**
+     * Reads the game mode from the user input.
+     */
     private void readGameMode() {
         boolean inputCorrect;
         do {
@@ -222,6 +270,9 @@ private void replayRecordedGame() {
         } while (!inputCorrect);
     }
 
+    /**
+     * Closes all player sockets.
+     */
     private void closeAllSockets() {
         for (Socket socket : m_playerSockets) {
             try {
