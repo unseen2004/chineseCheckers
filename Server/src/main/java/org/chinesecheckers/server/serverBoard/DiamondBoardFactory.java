@@ -12,12 +12,25 @@ public class DiamondBoardFactory extends DefaultBoardFactory {
         return board;
     }
 
-    @Override
-    protected void setPlayer(Board board, PlayerColor color, int[][] positions, boolean active) throws GameException {
-        for (int[] pos : positions) {
-            Cell cell = createCell(color, active);
-            cell.setNativeColor(PlayerColor.RED); // Set the edge color to red
-            board.setCell(pos[0], pos[1], cell);
+@Override
+protected void setPlayer(Board board, PlayerColor color, int[][] positions, boolean active) throws GameException {
+    for (int[] pos : positions) {
+        switch (pos[0] + "," + pos[1]) {
+            case "6,2":
+            case "12,15":
+            case "12,13":
+            case "8,15":
+            case "2,13":
+            case "1,6":
+                Cell cell = createCell(color.YELLOW, active);
+                cell.setKing(true);
+                board.setCell(pos[0], pos[1], cell);
+                break;
+            default:
+                Cell defaultCell = createCell(color, active);
+                board.setCell(pos[0], pos[1], defaultCell);
+                break;
         }
     }
+}
 }
