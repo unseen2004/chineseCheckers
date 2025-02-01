@@ -2,54 +2,59 @@ package org.chinesecheckers.server.serverBoard;
 
 import org.chinesecheckers.common.PlayerColor;
 
-public class DiamondBoard extends Board {
-    public DiamondBoard() {
-        columns = 13;
-        rows = 17;
-        cells = new Cell[columns + 1][rows + 1];
-        for (int i = 1; i <= columns; i++) {
-            for (int j = 1; j <= rows; j++) {
-                setField(i, j, new Cell());
-            }
-        }
+public class DiamondBoard extends DefaultBoard {
+
+    public DiamondBoard(int columns, int rows) {
+        super(columns, rows);
     }
 
     @Override
-    public String getAsString() {
-        StringBuilder stringBuilder = new StringBuilder();
-        for (int i = 1; i <= columns; i++) {
-            for (int j = 1; j <= rows; j++) {
-                if (cells[i][j].isPlayable()) {
-                    if (!cells[i][j].getCurrentColor().equals(PlayerColor.NONE)) {
-                        if (!stringBuilder.toString().isEmpty()) {
-                            stringBuilder.append(" ");
-                        }
-                        if (cells[i][j].isKing()) {
-                            stringBuilder.append("YELLOW_BORDER ");
-                        }
-                        stringBuilder.append(cells[i][j].getCurrentColor().toString());
-                        stringBuilder.append(" ");
-                        stringBuilder.append(i);
-                        stringBuilder.append(" ");
-                        stringBuilder.append(j);
-                    }
-                }
-            }
+    protected void appendCellState(StringBuilder sb, Cell cell, int x, int y) {
+        if (sb.length() > 0) sb.append(" ");
+        if (cell.isKing()) {
+            sb.append("KING_");
         }
-        return stringBuilder.toString();
+        sb.append(cell.getCurrentColor().name())
+                .append(" ")
+                .append(x)
+                .append(" ")
+                .append(y);
     }
 
     @Override
     public boolean isWinner(PlayerColor color) {
-        Cell tempCell;
-        for (int i = 1; i <= columns; i++) {
-            for (int j = 1; j <= rows; j++) {
-                tempCell = cells[i][j];
-                if (tempCell.isPlayable() && tempCell.getCurrentColor().equals(color) && !tempCell.getCurrentColor().equals(tempCell.getTargetColor())) {
-                    return false;
+        int kingCount = 0;
+        int targetCount = 0;
+
+        for (int x = 1; x <= getColumns(); x++) {
+            for (int y = 1; y <= getRows(); y++) {
+                Cell cell = cells[x][y];
+                if (cell.isPlayable() && cell.getCurrentColor() == color) {
+                    // Diamond variant requires all kings in target zone
+                    if (!cell.isKing()) return false;
+                    if (cell.getCurrentColor() != cell.getTargetColor()) {
+                        return false;
+                    }
+                    targetCount++;
                 }
             }
         }
-        return true;
+        return targetCount >= 3; // Diamond-specific win condition
+    }
+
+    @Override
+    protected void initializeSpecialCells() {
+        // Diamond pattern initialization
+        int centerX = getColumns() / 2 + 1;
+        int centerY = getRows() / 2 + 1;
+
+        for (int y = centerY - 2; y <= centerY + 2; y++) {
+            int width = 2 - Math.abs(centerY - y);
+            for (int x = centerX - width; x <= centerX + width; x++) {
+                if (isValidCoordinate(x, y)) {
+                    cells[x][y].setSpecial(true);
+                }
+            }
+        }
     }
 }

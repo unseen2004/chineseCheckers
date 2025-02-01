@@ -2,7 +2,6 @@ package org.chinesecheckers.server.serverBoard;
 
 import org.chinesecheckers.common.PlayerColor;
 
-
 public class Cell {
 
     private PlayerColor m_currentColor;
@@ -10,6 +9,7 @@ public class Cell {
     private PlayerColor m_targetColor;
     private boolean m_playable;
     private boolean m_isKing;
+    private boolean m_special; // Add this field
 
     public Cell() {
     }
@@ -20,6 +20,7 @@ public class Cell {
         this.m_targetColor = m_targetColor;
         this.m_playable = m_playable;
         this.m_isKing = m_isKing;
+        this.m_special = false; // Initialize the special field
     }
 
     public PlayerColor getCurrentColor() {
@@ -46,12 +47,15 @@ public class Cell {
         return m_isKing;
     }
 
-
-
     public void setKing(boolean m_isKing) {
         this.m_isKing = m_isKing;
-        if (m_isKing) {
-            this.m_currentColor = m_currentColor; // Set the color to YELLOW if the cell is a king
-        }
+    }
+
+    public void setSpecial(boolean special) {
+        this.m_special = special;
+    }
+
+    public boolean isSpecial() {
+        return m_special;
     }
 }

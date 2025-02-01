@@ -5,14 +5,12 @@ import org.chinesecheckers.common.PlayerColor;
 import org.chinesecheckers.server.serverBoard.Board;
 import org.chinesecheckers.server.serverBoard.BoardFactory;
 import org.chinesecheckers.server.serverBoard.DefaultBoard;
-import org.chinesecheckers.server.serverBoard.IllegalCellException;
+import org.chinesecheckers.server.serverBoard.GameException;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
-
-
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Component;
 
 @Component
 public class GameHandler {
@@ -20,29 +18,28 @@ public class GameHandler {
     private BoardFactory m_boardFactory;
     private Board m_board;
 
-    public GameHandler(@Qualifier("defaultMovementStrategy") MovementStrategy ms, BoardFactory bf) {
-        m_board = new DefaultBoard();
+    public GameHandler(@Qualifier("defaultMovementStrategy") MovementStrategy ms, BoardFactory bf) throws GameException {
+        m_board = new DefaultBoard(13, 17); // Provide the required parameters
         m_movementStrategy = ms;
         m_boardFactory = bf;
     }
 
-    public void initialize(BoardFactory boardFactory, MovementStrategy movementStrategy, int numberOfPlayers) {
+    public void initialize(BoardFactory boardFactory, MovementStrategy movementStrategy, int numberOfPlayers) throws GameException {
         this.m_boardFactory = boardFactory;
         this.m_movementStrategy = movementStrategy;
         this.m_board = m_boardFactory.createBoard(numberOfPlayers);
     }
+
     public PlayerColor[] getPossibleColorsForPlayers(int numberOfPlayers) {
         return switch (numberOfPlayers) {
             case 1 -> new PlayerColor[]{PlayerColor.RED};
             case 2 -> new PlayerColor[]{PlayerColor.RED, PlayerColor.GREEN};
             case 3 -> new PlayerColor[]{PlayerColor.RED, PlayerColor.BLUE, PlayerColor.YELLOW};
             case 4 -> new PlayerColor[]{PlayerColor.BLUE, PlayerColor.YELLOW, PlayerColor.VIOLET, PlayerColor.ORANGE};
-            case 6 ->
-                    new PlayerColor[]{PlayerColor.RED, PlayerColor.GREEN, PlayerColor.BLUE, PlayerColor.ORANGE, PlayerColor.YELLOW, PlayerColor.VIOLET};
+            case 6 -> new PlayerColor[]{PlayerColor.RED, PlayerColor.GREEN, PlayerColor.BLUE, PlayerColor.ORANGE, PlayerColor.YELLOW, PlayerColor.VIOLET};
             default -> throw new RuntimeException("Error number of players mismatch: " + numberOfPlayers);
         };
     }
-
 
     public int verifyMove(int x1, int y1, int x2, int y2, MoveValidationCondition[] moveValidationConditions) {
         return m_movementStrategy.verifyMove(m_board, x1, y1, x2, y2, moveValidationConditions);
@@ -55,7 +52,8 @@ public class GameHandler {
     public PlayerColor getColorAtCell(int x, int y) {
         try {
             return m_board.getColor(x, y);
-        } catch (IllegalCellException ufexc) {
+        } catch (GameException e) {
+            e.printStackTrace();
             return null;
         }
     }
@@ -72,11 +70,9 @@ public class GameHandler {
         return possibleMoves;
     }
 
-
     public boolean isWinner(PlayerColor color) {
         return m_board.isWinner(color);
     }
-
 
     public String getBoardAsString() {
         return m_board.getAsString();
@@ -85,5 +81,4 @@ public class GameHandler {
     public Board getBoard() {
         return m_board;
     }
-
 }

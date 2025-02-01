@@ -203,7 +203,7 @@ class Server {
         boolean inputCorrect;
         do {
             inputCorrect = true;
-            System.out.println("Game Mode (default/diamond(ダイヤモンドゲーム)):");
+            System.out.println("Game Mode (default / diamond(ダイヤモンドゲーム)):");
             Scanner scanner = new Scanner(System.in);
 
             try {

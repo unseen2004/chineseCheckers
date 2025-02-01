@@ -2,54 +2,52 @@ package org.chinesecheckers.server.serverBoard;
 
 import org.chinesecheckers.common.PlayerColor;
 
-
 public class DefaultBoard extends Board {
-    public DefaultBoard() {
-        columns = 13;
-        rows = 17;
-        cells = new Cell[columns + 1][rows + 1];
-        for (int i = 1; i <= columns; i++) {
-            for (int j = 1; j <= rows; j++) {
-                setField(i, j, new Cell());
-            }
-        }
-    }
 
+    public DefaultBoard(int columns, int rows) {
+        super(columns, rows);
+    }
 
     @Override
     public String getAsString() {
-        StringBuilder stringBuilder = new StringBuilder();
-        for (int i = 1; i <= columns; i++) {
-            for (int j = 1; j <= rows; j++) {
-                if (cells[i][j].isPlayable()) {
-                    if (!cells[i][j].getCurrentColor().equals(PlayerColor.NONE)) {
-                        if (!stringBuilder.toString().equals("")) {
-                            stringBuilder.append(" ");
-                        }
-                        stringBuilder.append(cells[i][j].getCurrentColor().toString());
-                        stringBuilder.append(" ");
-                        stringBuilder.append(i);
-                        stringBuilder.append(" ");
-                        stringBuilder.append(j);
-                    }
+        StringBuilder sb = new StringBuilder();
+        for (int x = 1; x <= getColumns(); x++) {
+            for (int y = 1; y <= getRows(); y++) {
+                Cell cell = cells[x][y];
+                if (cell.isPlayable() && cell.getCurrentColor() != PlayerColor.NONE) {
+                    appendCellState(sb, cell, x, y);
                 }
             }
         }
-        return stringBuilder.toString();
+        return sb.toString();
     }
 
+    protected void appendCellState(StringBuilder sb, Cell cell, int x, int y) {
+        if (sb.length() > 0) sb.append(" ");
+        sb.append(cell.getCurrentColor().name())
+                .append(" ")
+                .append(x)
+                .append(" ")
+                .append(y);
+    }
 
     @Override
     public boolean isWinner(PlayerColor color) {
-        Cell tempCell;
-        for (int i = 1; i <= columns; i++) {
-            for (int j = 1; j <= rows; j++) {
-                tempCell = cells[i][j];
-                if (tempCell.isPlayable() && tempCell.getCurrentColor().equals(color) && !tempCell.getCurrentColor().equals(tempCell.getTargetColor())) {
+        for (int x = 1; x <= getColumns(); x++) {
+            for (int y = 1; y <= getRows(); y++) {
+                Cell cell = cells[x][y];
+                if (cell.isPlayable() &&
+                        cell.getCurrentColor() == color &&
+                        cell.getCurrentColor() != cell.getTargetColor()) {
                     return false;
                 }
             }
         }
         return true;
+    }
+
+    @Override
+    protected void initializeSpecialCells() {
+        // Default board doesn't have special cell initialization
     }
 }

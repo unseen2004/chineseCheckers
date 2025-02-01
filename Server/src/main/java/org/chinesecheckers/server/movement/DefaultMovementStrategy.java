@@ -3,6 +3,7 @@ package org.chinesecheckers.server.movement;
 import org.chinesecheckers.server.serverBoard.Board;
 import org.chinesecheckers.server.serverBoard.IllegalCellException;
 import org.springframework.stereotype.Component;
+import org.chinesecheckers.server.serverBoard.GameException;
 
 import static org.chinesecheckers.common.PlayerColor.NONE;
 
@@ -116,9 +117,9 @@ public class DefaultMovementStrategy implements MovementStrategy {
             board.addPiece(x2, y2, board.getColor(x1, y1));
             board.removePiece(x1, y1);
             return board;
-        } catch (IllegalCellException ufexc) {
+        } catch (GameException e) {
+            e.printStackTrace();
             return board;
         }
-
     }
-}
+    }
